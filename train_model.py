@@ -41,6 +41,14 @@ def calculate_rsi(data, window):
     return data
 
 
+def calculate_macd(data, short_window, long_window, signal_window):
+    data['EMA_12'] = data['Close'].ewm(span=short_window, adjust=False).mean()  #Exponential moving average 12d, .ewm->exponentially weighted moving
+    data['EMA_26'] = data['Close'].ewm(span=long_window, adjust=False).mean()   #Exponential moving average 26d
+    data['MACD'] = data['EMA_12'] - data['EMA_26']
+    data['MACD_Signal'] = data['MACD'].ewm(span=signal_window, adjust=False).mean()
+    return data
+
+
 def normalize(data, scaler):
     # Data normalization
     data_scaled = scaler.fit_transform(data[['Open', 'Close', 'High', 'Low', 'Volume']])
