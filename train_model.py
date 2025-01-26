@@ -25,8 +25,8 @@ def get_data():
 
 
 def calculate_moving_average(data, window):
-    data['SMA'] = data['Close'].rolling(window=window).mean()
-    data = data.dropna() 
+    data['SMA'] = data['Close'].rolling(window=window).mean() 
+    data = data.dropna()
     return data
 
 
@@ -51,8 +51,8 @@ def calculate_macd(data, short_window, long_window, signal_window):
 
 def normalize(data, scaler):
     # Data normalization
-    data_scaled = scaler.fit_transform(data[['Open', 'Close', 'High', 'Low', 'Volume']])
-    data_scaled = pd.DataFrame(data_scaled, columns=['Open', 'Close', 'High', 'Low', 'Volume'])
+    data_scaled = scaler.fit_transform(data[['Open', 'Close', 'High', 'Low', 'Volume', 'SMA', 'RSI', 'MACD_Signal']])
+    data_scaled = pd.DataFrame(data_scaled, columns=['Open', 'Close', 'High', 'Low', 'Volume', 'SMA', 'RSI', 'MACD_Signal'])
     return data_scaled
 
 
