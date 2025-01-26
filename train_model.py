@@ -23,10 +23,23 @@ def get_data():
     data = data.dropna()
     return data
 
+
 def calculate_moving_average(data, window):
     data['SMA'] = data['Close'].rolling(window=window).mean()
     data = data.dropna() 
     return data
+
+
+def calculate_rsi(data, window):
+    delta = data['Close'].diff()    #diference between close[i] and close[i-1]
+    gain = (delta.where(delta > 0, 0)).rolling(window=window).mean()  # Average profit during window
+    loss = (-delta.where(delta < 0, 0)).rolling(window=window).mean()  # Average loss during window
+
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    data['RSI'] = rsi
+    return data
+
 
 def normalize(data, scaler):
     # Data normalization
