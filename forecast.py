@@ -19,13 +19,44 @@ def get_data():
     # organizing the table
     data = data[[ 'Open', 'Close', 'High', 'Low', 'Volume']]
     data = data.dropna()
+
+    data = calculate_moving_average(data, window=5)
+    data = calculate_rsi(data, window=5)  
+    data = calculate_macd(data, short_window=12, long_window=26, signal_window=9) 
+
+    data = data.dropna()
+    return data
+
+
+def calculate_moving_average(data, window):
+    data['SMA'] = data['Close'].rolling(window=window).mean() 
+    data = data.dropna()
+    return data
+
+
+def calculate_rsi(data, window):
+    delta = data['Close'].diff()    #diference between close[i] and close[i-1]
+    gain = (delta.where(delta > 0, 0)).rolling(window=window).mean()  # Average profit during window
+    loss = (-delta.where(delta < 0, 0)).rolling(window=window).mean()  # Average loss during window
+
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    data['RSI'] = rsi
+    return data
+
+
+def calculate_macd(data, short_window, long_window, signal_window):
+    data['EMA_12'] = data['Close'].ewm(span=short_window, adjust=False).mean()  #Exponential moving average 12d, .ewm->exponentially weighted moving
+    data['EMA_26'] = data['Close'].ewm(span=long_window, adjust=False).mean()   #Exponential moving average 26d
+    data['MACD'] = data['EMA_12'] - data['EMA_26']
+    data['MACD_Signal'] = data['MACD'].ewm(span=signal_window, adjust=False).mean()
     return data
 
 
 def normalize(data, scaler):
     # Data normalization
-    data_scaled = scaler.fit_transform(data[['Open', 'Close', 'High', 'Low', 'Volume']])
-    data_scaled = pd.DataFrame(data_scaled, columns=['Open', 'Close', 'High', 'Low', 'Volume'])
+    data_scaled = scaler.fit_transform(data[['Open', 'Close', 'High', 'Low', 'Volume', 'SMA', 'RSI', 'MACD_Signal']])
+    data_scaled = pd.DataFrame(data_scaled, columns=['Open', 'Close', 'High', 'Low', 'Volume', 'SMA', 'RSI', 'MACD_Signal'])
     return data_scaled
 
 
@@ -39,7 +70,6 @@ def create_sequences(data, sequence_length):
     return np.array(sequences), np.array(targets)
 
 
-
 def load_trained_model():
     return load_model("Apple_model.keras")
 
@@ -47,6 +77,7 @@ def load_trained_model():
 def predict_next_day(model, X_last):
     prediction = model.predict(X_last)
     return prediction
+
 
 def main():
     data = get_data()
