@@ -21,6 +21,12 @@ def get_data():
     # organizing the table
     data = data[[ 'Open', 'Close', 'High', 'Low', 'Volume']]
     data = data.dropna()
+
+    data = calculate_moving_average(data, window=5)
+    data = calculate_rsi(data, window=5)  
+    data = calculate_macd(data, short_window=12, long_window=26, signal_window=9) 
+
+    data = data.dropna()
     return data
 
 
@@ -86,7 +92,7 @@ def train(X_train, X_test, y_train, y_test):
     model.add(Dropout(0.1))
 
 
-    model.add(Dense(5))  # 5 Outputs: Open, Close, High, Low, Volume
+    model.add(Dense(8))  # 8 Outputs: Open, Close, High, Low, Volume, SMA, RSI, MACD_Signal
 
 
     model.compile(optimizer='adam', loss='mean_squared_error')
@@ -110,6 +116,7 @@ _BATCH_SIZE = 4
 _EPOCHS = 100
 
 data = get_data()
+
 scaler = MinMaxScaler()
 data_scaled = normalize(data, scaler)
 
